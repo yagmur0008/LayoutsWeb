@@ -1,0 +1,676 @@
+﻿@{
+    ViewData["Title"] = "Restaurant Menu Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    :root {
+        --primary-color: #d4af37;
+        --secondary-color: #2c3e50;
+        --accent-color: #e74c3c;
+        --light-bg: #f8f9fa;
+        --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --hover-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        min-height: 100vh;
+    }
+
+    .menu-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 30px 20px;
+    }
+
+    .header-section {
+        text-align: center;
+        color: black;
+        margin-bottom: 40px;
+        animation: fadeInDown 0.8s ease;
+    }
+
+    .header-section h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .header-section p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+        animation: fadeInUp 0.8s ease;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+
+    .stat-icon.dishes { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .stat-icon.categories { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .stat-icon.popular { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .stat-icon.rating { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+
+    .stat-content h3 {
+        margin: 0;
+        font-size: 2rem;
+        color: var(--secondary-color);
+        font-weight: 700;
+    }
+
+    .stat-content p {
+        margin: 5px 0 0;
+        color: #7f8c8d;
+        font-size: 0.95rem;
+    }
+
+    .menu-categories {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 30px;
+        animation: fadeIn 1s ease;
+    }
+
+    .category-card {
+        background: white;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: var(--card-shadow);
+        transition: all 0.3s ease;
+    }
+
+    .category-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--hover-shadow);
+    }
+
+    .category-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #c9a227 100%);
+        color: white;
+        padding: 25px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .category-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: pulse 3s ease-in-out infinite;
+    }
+
+    .category-header h2 {
+        margin: 0;
+        font-size: 1.8rem;
+        font-weight: 600;
+        position: relative;
+        z-index: 1;
+    }
+
+    .category-header .category-icon {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+
+    .menu-items {
+        padding: 25px;
+    }
+
+    .menu-item {
+        padding: 20px 0;
+        border-bottom: 1px solid #ecf0f1;
+        transition: all 0.3s ease;
+    }
+
+    .menu-item:last-child {
+        border-bottom: none;
+    }
+
+    .menu-item:hover {
+        background: #f8f9fa;
+        padding-left: 10px;
+        border-radius: 8px;
+    }
+
+    .item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 8px;
+    }
+
+    .item-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--secondary-color);
+        margin: 0;
+    }
+
+    .item-price {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--accent-color);
+        white-space: nowrap;
+        margin-left: 15px;
+    }
+
+    .item-description {
+        color: #7f8c8d;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin: 5px 0;
+    }
+
+    .item-tags {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+    }
+
+    .tag {
+        background: #ecf0f1;
+        color: #34495e;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .tag.spicy { background: #ffe5e5; color: #e74c3c; }
+    .tag.vegetarian { background: #d5f4e6; color: #27ae60; }
+    .tag.popular { background: #fff3cd; color: #f39c12; }
+    .tag.new { background: #d6eaf8; color: #3498db; }
+
+    .search-filter-section {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: var(--card-shadow);
+        animation: fadeInDown 0.8s ease;
+    }
+
+    .search-box {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .search-input {
+        flex: 1;
+        min-width: 250px;
+        padding: 12px 20px;
+        border: 2px solid #ecf0f1;
+        border-radius: 25px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+    }
+
+    .filter-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 10px 20px;
+        border: 2px solid #ecf0f1;
+        background: white;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    @@keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @@keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+    }
+
+    @@media (max-width: 768px) {
+        .header-section h1 {
+            font-size: 2.5rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+
+        .menu-categories {
+            grid-template-columns: 1fr;
+        }
+
+        .stat-card {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="menu-container">
+    <div class="header-section">
+        <h1>🍽️ Restaurant Menu Dashboard</h1>
+        <p>Explore our delicious selection of carefully crafted dishes</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon dishes">🍕</div>
+            <div class="stat-content">
+                <h3>45+</h3>
+                <p>Total Dishes</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon categories">📋</div>
+            <div class="stat-content">
+                <h3>6</h3>
+                <p>Categories</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon popular">⭐</div>
+            <div class="stat-content">
+                <h3>12</h3>
+                <p>Popular Items</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon rating">🏆</div>
+            <div class="stat-content">
+                <h3>4.8</h3>
+                <p>Average Rating</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="search-filter-section">
+        <div class="search-box">
+            <input type="text" class="search-input" placeholder="🔍 Search for dishes...">
+            <div class="filter-buttons">
+                <button class="filter-btn active">All</button>
+                <button class="filter-btn">Vegetarian</button>
+                <button class="filter-btn">Spicy</button>
+                <button class="filter-btn">Popular</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="menu-categories">
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-icon">🥗</div>
+                <h2>Appetizers</h2>
+            </div>
+            <div class="menu-items">
+                <div class="menu-item">
+                    <div class="item-header">
+                        <h3 class="item-name">Caesar Salad</h3>
+                        <span class="item-price">$12.99</span>
+                    </div>
+                    <p class="item-description">Fresh romaine lettuce, parmesan cheese, croutons, and our signature Caesar dressing</p>
+                    <div class="item-tags">
+                        <span class="tag vegetarian">Vegetarian</span>
+                        <span class="tag popular">Popular</span>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <div class="item-header">
+                        <h3 class="item-name">Buffalo Wings</h3>
+                        <span class="item-price">$14.99</span>
+                    </div>
+                    <p class="item-description">Crispy chicken wings tossed in spicy buffalo sauce, served with ranch dressing</p>
+                    <div class="item-tags">
+                        <span class="tag spicy">Spicy</span>
+                        <span class="tag popular">Popular</span>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <div class="item-header">
+                        <h3 class="item-name">Bruschetta</h3>
+                        <span class="item-price">$10.99</span>
+                    </div>
+                    <p class="item-description">Toasted bread topped with fresh tomatoes, garlic, basil, and olive oil</p>
+                    <div class="item-tags">
+                        <span class="tag vegetarian">Vegetarian</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-icon">🍝</div>
+                <h2>Main Courses</h2>
+            </div>
+            <div class="menu-items">
+                <div class="menu-item">
+                    <div class="item-header">
+                        <h3 class="item-name">Grilled Salmon</h3>
+                        <span class="item-price">$24.99</span>
+                    </div>
+                    <p class="item-description">Fresh Atlantic salmon grilled to perfection, served with seasonal vegetables and lemon butter sauce</p>
+                    <div class="item-tags">
+                        <span class="tag popular">Popular</span>
+                        <span class="tag new">New</span>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <div class="item-header">
+                        <h3 class="item-name">Beef Tenderloin</h3>
+                        <span class="item-price">$32.99</span>
+                    </div>
+                    <p class="item-description">Premium beef tenderloin with red wine reduction, mashed potatoes, and grilled asparagus</p>
+                    <div class="item-tags">
+                        <span class="tag popular">Popular</span>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <div class="item-header">
+                        <h3 class="item-name">Chicken Alfredo</h3>
+                        <span class="item-price">$18.99</span>
+                    </div>
+                    <p class="item-description">Fettuccine pasta with grilled chicken in a creamy parmesan sauce</p>
+                    <div class="item-tags">
+                        <span class="tag">Classic</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-icon">🍕</div>
+                <h2>Pizza</h2>
+            </div>
+            <div class="menu-items">
+                <div class="menu-item">
+                    <div class="item-header">
+                        <h3 class="item-name">Margherita</h3>
+                        <span class="item-price">$16.99</span>
+                    </div>
+                    <p class="item-description">Classic pizza with fresh mozzarella, tomato sauce, and basil</p>
+                    <div class="item-tags">
+                        <span class="tag vegetarian">Vegetarian</span>
+                        <span class="tag popular">Popular</span>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <div class="item-header">
+                        <h3 class="item-name">Pepperoni Deluxe</h3>
+                        <span class="item-price">$19.99</span>
+                    </div>
+                    <p class="item-description">Loaded with premium pepperoni, mozzarella cheese, and our special tomato sauce</p>
+                    <div class="item-tags">
+                        <span class="tag popular">Popular</span>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <div class="item-header">
+                        <h3 class="item-name">Quattro Formaggi</h3>
+                        <span class="item-price">$20.99</span>
+                    </div>
+                    <p class="item-description">Four cheese blend: mozzarella, gorgonzola, parmesan, and fontina</p>
+                    <div class="item-tags">
+                        <span class="tag vegetarian">Vegetarian</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-icon">🍔</div>
+                <h2>Burgers</h2>
+            </div>
+            <div class="menu-items">
+                <div class="menu-item">
+                    <div class="item-header">
+                        <h3 class="item-name">Classic Burger</h3>
+                        <span class="item-price">$15.99</span>
+                    </div>
+                    <p class="item-description">Angus beef patty with lettuce, tomato, onion, pickles, and our special sauce</p>
+                    <div class="item-tags">
+                        <span class="tag popular">Popular</span>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <div class="item-header">
+                        <h3 class="item-name">BBQ Bacon Burger</h3>
+                        <span class="item-price">$17.99</span>
+                    </div>
+                    <p class="item-description">Beef patty topped with crispy bacon, cheddar cheese, onion rings, and BBQ sauce</p>
+                    <div class="item-tags">
+                        <span class="tag popular">Popular</span>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <div class="item-header">
+                        <h3 class="item-name">Veggie Burger</h3>
+                        <span class="item-price">$14.99</span>
+                    </div>
+                    <p class="item-description">House-made veggie patty with avocado, sprouts, and chipotle mayo</p>
+                    <div class="item-tags">
+                        <span class="tag vegetarian">Vegetarian</span>
+                        <span class="tag new">New</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-icon">🍰</div>
+                <h2>Desserts</h2>
+            </div>
+            <div class="menu-items">
+                <div class="menu-item">
+                    <div class="item-header">
+                        <h3 class="item-name">Chocolate Lava Cake</h3>
+                        <span class="item-price">$8.99</span>
+                    </div>
+                    <p class="item-description">Warm chocolate cake with a molten center, served with vanilla ice cream</p>
+                    <div class="item-tags">
+                        <span class="tag popular">Popular</span>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <div class="item-header">
+                        <h3 class="item-name">Tiramisu</h3>
+                        <span class="item-price">$7.99</span>
+                    </div>
+                    <p class="item-description">Classic Italian dessert with espresso-soaked ladyfingers and mascarpone cream</p>
+                    <div class="item-tags">
+                        <span class="tag">Classic</span>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <div class="item-header">
+                        <h3 class="item-name">Cheesecake</h3>
+                        <span class="item-price">$7.99</span>
+                    </div>
+                    <p class="item-description">New York style cheesecake with your choice of strawberry or chocolate topping</p>
+                    <div class="item-tags">
+                        <span class="tag popular">Popular</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category-card">
+            <div class="category-header">
+                <div class="category-icon">🍹</div>
+                <h2>Beverages</h2>
+            </div>
+            <div class="menu-items">
+                <div class="menu-item">
+                    <div class="item-header">
+                        <h3 class="item-name">Fresh Lemonade</h3>
+                        <span class="item-price">$4.99</span>
+                    </div>
+                    <p class="item-description">Freshly squeezed lemonade with mint and ice</p>
+                    <div class="item-tags">
+                        <span class="tag">Refreshing</span>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <div class="item-header">
+                        <h3 class="item-name">Iced Coffee</h3>
+                        <span class="item-price">$5.99</span>
+                    </div>
+                    <p class="item-description">Cold brew coffee served over ice with your choice of milk</p>
+                    <div class="item-tags">
+                        <span class="tag popular">Popular</span>
+                    </div>
+                </div>
+                <div class="menu-item">
+                    <div class="item-header">
+                        <h3 class="item-name">Smoothie Bowl</h3>
+                        <span class="item-price">$6.99</span>
+                    </div>
+                    <p class="item-description">Blended fruit smoothie topped with granola, fresh berries, and honey</p>
+                    <div class="item-tags">
+                        <span class="tag vegetarian">Vegetarian</span>
+                        <span class="tag new">New</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.querySelector('.search-input');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const menuItems = document.querySelectorAll('.menu-item');
+        const categoryCards = document.querySelectorAll('.category-card');
+
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+
+            categoryCards.forEach(card => {
+                const items = card.querySelectorAll('.menu-item');
+                let hasVisibleItems = false;
+
+                items.forEach(item => {
+                    const itemName = item.querySelector('.item-name').textContent.toLowerCase();
+                    const itemDesc = item.querySelector('.item-description').textContent.toLowerCase();
+
+                    if (itemName.includes(searchTerm) || itemDesc.includes(searchTerm)) {
+                        item.style.display = '';
+                        hasVisibleItems = true;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+
+                card.style.display = hasVisibleItems ? '' : 'none';
+            });
+        });
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                const filter = this.textContent.toLowerCase();
+
+                categoryCards.forEach(card => {
+                    const items = card.querySelectorAll('.menu-item');
+                    let hasVisibleItems = false;
+
+                    items.forEach(item => {
+                        const tags = Array.from(item.querySelectorAll('.tag')).map(tag => tag.textContent.toLowerCase());
+
+                        if (filter === 'all' || tags.includes(filter)) {
+                            item.style.display = '';
+                            hasVisibleItems = true;
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+
+                    card.style.display = hasVisibleItems ? '' : 'none';
+                });
+            });
+        });
+    });
+</script>
